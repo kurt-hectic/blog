@@ -99,7 +99,7 @@ The details of this refactoring process will be described in a separate series o
 
 In 2024, the TT-WDQMS became the Expert Team on the Observations Data Quality Monitoring System (ET-ODQMS) and moved under the Standing Committee on WMO Integrated Processing and Prediction System (SC-WIPPS), for better alignment with 
 other NWP center related activites. The Tokyo meeting of ET-ODQMS in October 2024 was the first time the team saw each other in person, having met only virtually since 2019. 
-CMA and BoM nominate experts to the team and express their intention to become WDQMS monitoring centers in 2023 and 2024 respectively.
+China Meteorological Administration (CMA) and The Bureau of Meteorology (BoM) nominate experts to the team and express their intention to become WDQMS monitoring centers in 2023 and 2024 respectively.
 At the Tokyo meeting, important decisions on a timeliness template definition, the harmonization of the legacy CBS-led observations quality monitoring 
 and the WDQMS process as well as the formalization of WDQMS monitoring centers as WIPPS centers were taken.
 
@@ -138,5 +138,5 @@ However, there are reasons to believe the choice of an NWP center centric and th
 First, only NWP centers are able to provide a measure of the quality of observations, as they can compare actual observations with expected values 
 from their models. Likewise, threy are also in a unqiue position to measure timeliness, since timeliness requirements for global NWP measure the 
 time observations take to reach NWP. Second, only NWP centers have the technical means to remove duplicate observations in the network, through a mix of data-assimilation 
-and model based deduplication. Third, as operational entities, NWP centers have unique capabilities to not only monitor data in practice, 
+and model based deduplication. Third, as operational entities, NWP centers have unique capabilities to not only monitor data in theory, 
 but doing the hard job of routinely providing CSV files to WDQMS four times per day, every day.
