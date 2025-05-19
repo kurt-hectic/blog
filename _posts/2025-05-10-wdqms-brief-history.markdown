@@ -99,7 +99,7 @@ The details of this refactoring process will be described in a separate series o
 
 In 2024, the TT-WDQMS became the Expert Team on the Observations Data Quality Monitoring System (ET-ODQMS) and moved under the Standing Committee on WMO Integrated Processing and Prediction System (SC-WIPPS), for better alignment with 
 other NWP center related activites. The Tokyo meeting of ET-ODQMS in October 2024 was the first time the team saw each other in person, having met only virtually since 2019. 
-China Meteorological Administration (CMA) and The Bureau of Meteorology (BoM) nominate experts to the team and express their intention to become WDQMS monitoring centers in 2023 and 2024 respectively.
+China Meteorological Administration (CMA) and The Bureau of Meteorology (BoM) nominated experts to the team and expressed their intention to become WDQMS monitoring centers in 2023 and 2024 respectively.
 At the Tokyo meeting, important decisions on a timeliness template definition, the harmonization of the legacy CBS-led observations quality monitoring 
 and the WDQMS process as well as the formalization of WDQMS monitoring centers as WIPPS centers were taken.
 
@@ -128,8 +128,8 @@ by adding snow-depth as an additional variable in the NWP surface module.
 While a data exchange template for ABOS was already developed back in 2017, an implementation in the webtool will require significant conceptual work 
 to visualize the the numerous in-flight and ascent/descent observations in this system. An ABOS module of WDQMS therefore not be released before 2026.
 
-The implementation of WIS 2.0 is bringing old questions of the definitions of availability back to the foreground. 
-Whereas availability based on observations becoming available to NWP centers data assimilation provided for a relatively uncontested 
+The implementation of WIS 2.0 by the WMO community will bringing old questions about the meaning of availability back to the foreground. 
+Whereas availability based on observations available to NWP centers data assimilation provided for a relatively uncontested 
 availability definition under the GTS with its multiple different vantage points and less observable design, WIS 2.0, featuring an open-design provides a 
 alternative definition of availability, potentially different from the NWP center one, particularly during the transition time where not all WDQMS monitoring Centers
 have yet established an operational connection to WIS 2.0.

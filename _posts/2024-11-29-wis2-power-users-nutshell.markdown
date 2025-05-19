@@ -57,7 +57,7 @@ The following code implements a simple MQTT subscription, queueing of incoming m
 import pahoo
 {% endhighlight %}
 
-#### parallel processing
+#### parallel processing to increase download throughput  
 
 Second, the queue makes is possible for multiple consumers to process the queue in parallel and thus to increase the overall download througput. 
 This makes sense, because the downloading process spends most of its time waiting from network IO, during which another process can exchange data 
@@ -68,35 +68,6 @@ The following code adds mutlithreading to the previous solution with 10 threads 
 {% highlight python %}
 import threads
 {% endhighlight %}
-
-Without asynchronous processing the downloading component of 
-
-
-This is necessary because the message inflow of potentially thousands of messages per 
-second via MQTT, largely exceeds the HTTP download capacity of a naive implementation. Assuming a technically feasible and realistic peak-usage MQTT message inflow of 1000 messages per second, 
-a download-time of 1 millisecond would be required for the downloading not to fall behind message inflow.
-However, download through the internet and from a potentially physically distanced GC must be assumed to be in the 100 millisecond to second range.
-The inflow to processing rate of a a single-thread and synchronous download approach is in the order of 1/100 to 1/1000!
-Besides, even assuming a sufficient download rate to match message inflow on average, the system would still have to contend with occasionally naturally ocurring network or GC download delays. 
-In a naive implementation, continued inflow with simoultaneous blocking of message processing (download), 
-will eventually exhaust the message buffer of the MQTT client, leading to messages being dropped and consequently lost to the business process.
-
-The solution to this problem is to introduce a queue between producer (MQTT client) and consumer (HTTP download) and to process items in the 
-queue asynchronously. Since queuing a message can be done at a similar rate to the message inflow, the MQTT client buffer can be quickly 
-cleared. Messages are savely stored in the queue until they have been processed. The consumer processing notifications and downloading associated data
-runs as a separate process, with the queue being a shared resource between producer and consumer. 
-
-
-
-While decoupling message inflow and download, and mitigating occasional inflow spikes, 
-introducing a queue in itself does not solve the problem of MQTT message inflow exceeding the download throughput of a single queue processor. 
-
-### parallel processing to increase download throughput  
-
-The overall throughput of the download component can be increased by processing the queue with multiple consumers in parallel. 
-Since a download process typically spends most of its time waiting for IO, parallel processing can significantly increase the overall download 
-throughput. 
-
 
 
 While multithreading is a good approach to deal with client side IO issues, the overall download throughput will still be limited by 
