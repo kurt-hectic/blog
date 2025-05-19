@@ -1,21 +1,22 @@
 ---
 layout: post
 title:  "A brief history of WDQMS"
-date:   2025-01-10 21:43:53 +0100
+date:   2025-05-10 21:43:53 +0100
 categories: wqdms
 tags: wdqms 
 ---
-The [WIGOS Data Quality Monitoring System webtool](https://wdqms.wmo.int) (WDQMS) is the cornerstone of WMO's observations monitoring. 
-The system delivers the data certifying payments of the Systematic Observations Financing Facility, assits WIGOS Regional Centers 
+The [WIGOS Data Quality Monitoring System webtool](https://wdqms.wmo.int) (WDQMS) is the cornerstone of the [World Meteorological Organization's](https://wmo.int) (WMO) observations monitoring. 
+The system calculates the metrics certifying payments of the [Systematic Observations Financing Facility](https://un-soff.org) (SOFF), assists Regional WIGOS Centers (RWC)
 with their quality monitoring functions, helps Numerical Weather Prediction (NWP) centers benchmarking their use of observations, and 
 provides the data allowing WMO to calculate metrics about the evolution of its observing systems, for example the Global Basic Observing System (GBON).
-WDQMS covers surface, radiosonde, marine and climate observations and has started the transition from GTS to WIS 2.0.
+WDQMS has modues for surface, radiosonde, marine and climate observations and has started the migration from GTS to WIS 2.0.
 
-But how did WDQMS come to be the system it is? This post examines the history of WDQMS from its beginnings as a concept to its current state.
+But how did WDQMS come to be the system it is? This post examines the history of WDQMS from its beginnings as a concept, to its current state.
 
 ### The beginnigs
-The WIGOS Data Quality Monitoring (WDQMS) concept was developed in the Inter Commission Coordination group on the WMO Integrated Global Observing System (WIGOS) starting from 2014, under the leadership of co-chairs Sue Barrel and Bertrand Calpini, and WIGOS project manager Lars Peter Riishoojgaard. It consists of a monitoring function, the focus of this post, 
+The WIGOS Data Quality Monitoring (WDQMS) concept was developed in the Inter Commission Coordination Group on the WMO Integrated Global Observing System (WIGOS) starting from 2014, under the leadership of co-chairs Sue Barrel and Bertrand Calpini, and WIGOS project manager Lars Peter Riishoojgaard. It consists of a monitoring function, the focus of this post, 
 and an Incident Management System function and Regional WIGOS center (RWC) concept. The monitoring function for availability, quality and timeliness was designed to be based on output provided by NWP centers.
+
 The NWP-focused approach reflected NWP centers' *unique perspective as principal users of observations exchanged in real-time*. 
 NWP centers are best suited to asses which observational data exchanged through the network is **available**, **usable** and **in-time** for assimilation in numerical weather prediction.
 While the webtool showing the results, is the most visible part of the system, the NWP centers providing data, the Experts responsible for the design of the data-exchange templates and the community interpreting the information play equally important roles in the WDQMS ecosystem. 
@@ -25,14 +26,14 @@ The request to review and modernise the NWP-based monitoring within the WIGOS fr
 This led to the creation of the Task Team on the WIGOS Data Quality Monitorint System (TT-WDQMS), which further developed the concept under the leadership of the late Stuart Goldstraw.
 
 Multiple NWP centers routinely providing feedback on observations using a standardized template makes it possible to compare results and results in a global view independent of any potential biases in individual NWP centers.
-Initially ECMWF and NCEP agreed to take part in a pilot project covering surface (SYNOP) and upper-air (TEMP) observation in 2015, with DWD and JMA joining the Pilot Project in 2016.
+Initially the European Center for Medium-range Weather Forecasts (ECMWF) and the National Centers for Environmental Prediction (NCEP) agreed to take part in a pilot project for surface (SYNOP) and upper-air (TEMP) observation in 2015, with Deutscher Wetterdienst (DWD) and Japan Meteorological Agency (JMA) joining the Pilot Project in 2016.
 
 ![WDQMS concept]( {{ '/assets/images/WDQMS-concept.png' | relative_url }}  )
 *WDQMS data-flow, from the WDQMS User Manual*
 
 
-While the reported data was initially only used to generate ad-hoc plots, by 2017 a beta-version of a webbased tool, later to become synonymous with "WDQMS", had been developed by the WMO Secretariat. 
-It allowed to view the SYNOP and TEMP data aggregated by six-hour and daily periods and to see results for each center individually as well as a combined view.
+While the reported data was initially only used to generate ad-hoc plots, by 2017 a beta-version of a webbased tool, later to become synonymous with _WDQMS_, had been developed by the WMO Secretariat. 
+It allowed to view SYNOP and TEMP observation aggregated by six-hour and daily intervalls and to see results for each center individually, as well as a combined view.
 The initial system was based on a single rented Linux Infomaniak server, running a PostGIS database, a Tomcat based Geoserver for generating the maps, first a PHP and later a Django backend, and a simple HTML and Jquery based web-frontend.
 Most of the ETL proccesses transforming the raw NWP data provided as CSV files into aggregated results ran directly in the database as complex SQL queries, generated by Python scripts.
 The initial choices of a map-centric system with colored dots representing stations, a calendar based navigation and popups for details have endured and are still recognizable in the current system.
@@ -45,11 +46,11 @@ In 2017 Marine Quality and Aircraft templates were developpped, under the leader
 
 ### Towards operationalization and GBON
 
-In 2018, the 70th WMO Executive Council endorsed a WDQMS based quality monitoring function as a core WIGOS component, and took steps to include the WDQMS concept into the WIGOS regulatory material.
+In 2018, the 70th WMO Executive Council (EC) endorsed a WDQMS based quality monitoring function as a core WIGOS component, and took steps to include the WDQMS concept into the WIGOS regulatory material.
 At the same time, ECMWF and the WMO Secretariat started working on an agreement for ECMWF to take over the development and operations of the WDQMS webtool in its operational phase. 
 A Memorandum of Understanding was signed in 2019.
 
-Starting from 2018, and as a result of the WDQMS webtool putting into evidence the relatively poor state of international data exchange, CBS-TECO, the CBS Management Group and later the WMO EC decided to take 
+Starting from 2018, and as a result of the WDQMS webtool putting into evidence the relatively poor state of international data exchange, the Commission for Basic Systems (CBS) Management Group, CBS-TECO, and later the WMO EC decided to take 
 immediate action to improve the situation, eventually leading to the development of the WMO Global Basic Observing Network (GBON) and WMO's new data-policy.
 
 In the meantime the ECMWF web-development team, freshly reinforced by lead developer Pierre Vernier, was busy working on the production system.
@@ -70,12 +71,12 @@ The first production version of WDQMS hosted by ECMWF was launched on 17 March 2
 
 After the WMO Reform in 2020, TT-WDQMS, now chaired by Jeff Ator from NCEP, became part of the Standing Committee of Information Management and Technology (SC-IMT) under the new WMO Structure.
 
-WDQMS continued to be enhanced in the 2020-21 timeframe. The most visible result of these efforts were the new GCOS module, for GSN (Surface) and GUAN (Upper-air). 
+WDQMS continued to be enhanced in the 2020-21 timeframe. The most visible result of these efforts were the new Global Climate Observing System (GCOS) module, for GSN (Surface) and GUAN (Upper-air). 
 But the team also implemented numerous smaller features, such as a download link, adding DWD and NCEP upper-air reporting, station search functions and an interface to provide the monthly 
 assessed reporting status to OSCAR/Surface.
 
 In 2022 and co-inciding with WDQMS lead-developer Pierre leaving ECMWF, WMO and ECMWF agreed a new Memorandum of Understanding whereby ECMWF would continue operating WDQMS, and WMO was going to take over responsiblity for the development of the system.
-Amro Aboulenein joined WMO as a full-stack developer in 2022.
+Amro Abouelenein joined WMO as a full-stack developer in 2022.
 
 Major releases since this time were the implementation of the GBON module, lauched in May 2023 just before the GBON regulations coming into force, 
 monthly aggregations of SYNOP and TEMP, as well as the Marine Quality module. Other developments were support for stations 
@@ -89,18 +90,26 @@ algorithms aggregating them.
 After a review, the team found that while the overall Kubernetes platform and system architecture were still fit for purpose, there was a need 
 to rationalize the map related components of the system architecture, to upgrade the development platform, 
 and to introduce a software architecture to rationalize the numerous scripts processing the different data types that had been added since 2020.
-This resulted in a four phase refactoring process. First, to simplity the map tile production. 
+This resulted in a four phase refactoring process. First, to simplify the map tile production. 
 Second, to modernize the development platform by leveraging docker compose instead of bespoke scripts. 
 Third and forth, to introduce a software architecture and software development best practices 
 and to modularize the code of data processing and aggregation algorithms.
 A comprehensive end-to-end integration testing, developed by the team with the help of Benjamin Pire, made sure that the refactored system still processed data as before.
 The details of this refactoring process will be described in a separate series of posts.
 
-In 2024, TT-WDQMS became ET-ODQMS and moved under the Standing Committee on WMO Integrated Processing and Prediction System, for better alignment with 
+In 2024, the TT-WDQMS became the Expert Team on the Observations Data Quality Monitoring System (ET-ODQMS) and moved under the Standing Committee on WMO Integrated Processing and Prediction System (SC-WIPPS), for better alignment with 
 other NWP center related activites. The Tokyo meeting of ET-ODQMS in October 2024 was the first time the team saw each other in person, having met only virtually since 2019. 
 CMA and BoM nominate experts to the team and express their intention to become WDQMS monitoring centers in 2023 and 2024 respectively.
-At the Tokyo meeting, important decisions on timeliness template defintion, the harmonization of the legacy CBS-led observations quality monitoring 
+At the Tokyo meeting, important decisions on a timeliness template definition, the harmonization of the legacy CBS-led observations quality monitoring 
 and the WDQMS process as well as the formalization of WDQMS monitoring centers as WIPPS centers were taken.
+
+
+![ET-ODQMS-family-picture]( {{ '/assets/images/ET-ODQMS-family-picture.png' | relative_url }}  )
+
+*Meeting of ET-ODQMS in Tokyo in October 2024*
+
+
+
 
 ### WDQMS, the future
 
@@ -119,10 +128,15 @@ by adding snow-depth as an additional variable in the NWP surface module.
 While a data exchange template for ABOS was already developed back in 2017, an implementation in the webtool will require significant conceptual work 
 to visualize the the numerous in-flight and ascent/descent observations in this system. An ABOS module of WDQMS therefore not be released before 2026.
 
-The implementation of WIS2 is bringing old questions of the definitions of availability back to the foreground. 
+The implementation of WIS 2.0 is bringing old questions of the definitions of availability back to the foreground. 
 Whereas availability based on observations becoming available to NWP centers data assimilation provided for a relatively uncontested 
-availability definition under the GTS with its multiple different vantage points and less observable design, WIS2, featuring an open-design provides a potentially
+availability definition under the GTS with its multiple different vantage points and less observable design, WIS 2.0, featuring an open-design provides a 
 alternative definition of availability, potentially different from the NWP center one, particularly during the transition time where not all WDQMS monitoring Centers
-have yet established an operational connection to WIS2.
+have yet established an operational connection to WIS 2.0.
 
-
+However, there are reasons to believe the choice of an NWP center centric and thus end-user based approach leaveraging NWP centers unique view of observations, will prove to be lasting.
+First, only NWP centers are able to provide a measure of the quality of observations, as they can compare actual observations with expected values 
+from their models. Likewise, threy are also in a unqiue position to measure timeliness, since timeliness requirements for global NWP measure the 
+time observations take to reach NWP. Second, only NWP centers have the technical means to remove duplicate observations in the network, through a mix of data-assimilation 
+and model based deduplication. Third, as operational entities, NWP centers have unique capabilities to not only monitor data in practice, 
+but doing the hard job of routinely providing CSV files to WDQMS four times per day, every day.

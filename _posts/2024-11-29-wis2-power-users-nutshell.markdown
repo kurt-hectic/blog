@@ -2,33 +2,108 @@
 layout: post
 title:  "Power-using WIS2 in a nutshell"
 date:   2024-11-29 21:43:53 +0100
-categories: jekyll update
+categories: wis2
 tags: wis2 
 ---
-This post examines how users with high-availability or high-throughput requirements can obtain data from WMO Information System 2.0 (WIS2). 
+This post examines how users with high-availability or high-throughput requirements can obtain data from the WMO Information System 2.0 (WIS2). 
 
-WIS2 is the World Meteorological Organization next generation IoT data-exchange network. WIS2 is based on MQTT and web-storge. In WIS2, consumers and producers  
+WIS2 is the World Meteorological Organization next generation IoT data-exchange network. WIS2 is based on MQTT and web-storage. 
+In WIS2, consumers and producers communicate through a system of interconnected Global Brokers (GB) and Global Caches (GC).
+GBs are MQTT brokers on which [notifications of new data](https://github.com/wmo-im/wis2-notification-message) are published using a topic from the WIS2 [topic-hierarchy](https://github.com/wmo-im/wis2-topic-hierarchy/), 
+whereas GCs are web-storage components from which users can download data at scale. 
 
-You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run `jekyll serve`, which launches a web server and auto-regenerates your site when a file is updated.
+#### a simple WIS2 downloader one-liner
 
-Jekyll requires blog post files to be named according to the following format:
+To obtain data from WIS2, a user establishes a MQTT connection to a broker, subscribes to a topic of interest and processes MQTT messages containing WIS2 notifcations. Notification messages, in JSON format, contain basic information which can be used to filter the data, and also include a URL to a GC from which the 
+data associated which the notification can be downloaded.
 
-`YEAR-MONTH-DAY-title.MARKUP`
-
-Where `YEAR` is a four-digit number, `MONTH` and `DAY` are both two-digit numbers, and `MARKUP` is the file extension representing the format used in the file. After that, include the necessary front matter. Take a look at the source for this post to get an idea about how it works.
-
-Jekyll also offers powerful support for code snippets:
-
-{% highlight ruby %}
-def print_hi(name)
-  puts "Hi, #{name}"
-end
-print_hi('Tom')
-#=> prints 'Hi, Tom' to STDOUT.
+{% highlight shell %}
+mosquitto_sub -h globalbroker.meteo.fr --username everyone -P everyone  -t "cache/a/wis2/se-smhi/data/core/weather/surface-based-observations/synop" |  while read line ; do echo $line | jq -r '.links[0].href' | wget --input-file=-  ; done
 {% endhighlight %}
 
-Check out the [Jekyll docs][jekyll-docs] for more info on how to get the most out of Jekyll. File all bugs/feature requests at [Jekyll’s GitHub repo][jekyll-gh]. If you have questions, you can ask them on [Jekyll Talk][jekyll-talk].
+This shell one-liner, leveraging only unix tools, exemplifies how to download data from WIS2. _mosquitto_sub_ connects to a global broker and subscribes to surface observations from Sweden.
+The output is read by a loop, piped into a _jq_ expression extracting the data URL from the notification which is in turn piped to _wget_ for download.
 
-[jekyll-docs]: https://jekyllrb.com/docs/home
-[jekyll-gh]:   https://github.com/jekyll/jekyll
-[jekyll-talk]: https://talk.jekyllrb.com/
+However, this solution is unsuitable for processing a high rate of messages. Since all commands run synchronously as one process, mosquitto_sub, the part responsible
+for receiving new messages from the network, is blocked while data is being downloaded. Evenytually the network buffer will be exhausted leading to data-loss.
+The solution is also reliant on a single broker, failure of which will lead to failure of receiving data.
+
+The remainder of this post discusses strategies how to reliably connect to WIS2 and to process data at scale.
+
+
+### decoupling notification reception and processing
+
+A first step in implementing a high-throughput WIS2 processing solution is to de-couple MQTT message inflow (producer) and the downloading of 
+the WIS2 notifications contained in the messages (consumer). This is usually done by introducing a queue between producer and consumer and processing
+the queue in a separate process or thread. 
+The queue servers multiple purposes. 
+
+#### asynchronous processing
+
+First, it allows to process messages asynchronously. Since putting an item into a queue can be done at an equal or even faster
+rate than the incoming message rate, the producer can immediately return to accepting new messages from the network, whereas the processing of these
+messages can be done independently by a different process. 
+This is important because downloading data takes significantly longer than receiving a new MQTT message. 
+Messages can arrive through MQTT at a rate of 1000/s, whereas downloading even a small amount of data through the internet from a physically remote
+GC can take between 100-1000ms. This is because a new network connection is required, the data needs to be transferred through the network and 
+the associated data in WIS2 typically is much larger than the notification message. 
+Without a queue and in times of a high rate of message arrival, downloading the data associated with one message will block the arrival of 100-1000 messages, 
+eventually exhausting the network buffer and leading to data loss.
+Subject to enough memory, the queue can buffer a temporary higher inflow rate than processing rate.
+
+The following code implements a simple MQTT subscription, queueing of incoming messages in a queue and processing of the queue in a separate thread.
+
+{% highlight python %}
+import pahoo
+{% endhighlight %}
+
+#### parallel processing
+
+Second, the queue makes is possible for multiple consumers to process the queue in parallel and thus to increase the overall download througput. 
+This makes sense, because the downloading process spends most of its time waiting from network IO, during which another process can exchange data 
+through the network.
+
+The following code adds mutlithreading to the previous solution with 10 threads consuming the queue in parallel.
+
+{% highlight python %}
+import threads
+{% endhighlight %}
+
+Without asynchronous processing the downloading component of 
+
+
+This is necessary because the message inflow of potentially thousands of messages per 
+second via MQTT, largely exceeds the HTTP download capacity of a naive implementation. Assuming a technically feasible and realistic peak-usage MQTT message inflow of 1000 messages per second, 
+a download-time of 1 millisecond would be required for the downloading not to fall behind message inflow.
+However, download through the internet and from a potentially physically distanced GC must be assumed to be in the 100 millisecond to second range.
+The inflow to processing rate of a a single-thread and synchronous download approach is in the order of 1/100 to 1/1000!
+Besides, even assuming a sufficient download rate to match message inflow on average, the system would still have to contend with occasionally naturally ocurring network or GC download delays. 
+In a naive implementation, continued inflow with simoultaneous blocking of message processing (download), 
+will eventually exhaust the message buffer of the MQTT client, leading to messages being dropped and consequently lost to the business process.
+
+The solution to this problem is to introduce a queue between producer (MQTT client) and consumer (HTTP download) and to process items in the 
+queue asynchronously. Since queuing a message can be done at a similar rate to the message inflow, the MQTT client buffer can be quickly 
+cleared. Messages are savely stored in the queue until they have been processed. The consumer processing notifications and downloading associated data
+runs as a separate process, with the queue being a shared resource between producer and consumer. 
+
+
+
+While decoupling message inflow and download, and mitigating occasional inflow spikes, 
+introducing a queue in itself does not solve the problem of MQTT message inflow exceeding the download throughput of a single queue processor. 
+
+### parallel processing to increase download throughput  
+
+The overall throughput of the download component can be increased by processing the queue with multiple consumers in parallel. 
+Since a download process typically spends most of its time waiting for IO, parallel processing can significantly increase the overall download 
+throughput. 
+
+
+
+While multithreading is a good approach to deal with client side IO issues, the overall download throughput will still be limited by 
+available network bandwith and server side limitations, such as restrictions of number of connections.
+
+A queue based and multithreaded implementation of a WIS2 connection can handle spikes in message inflow, and has good overall throughput 
+due to parallel processing. However, it does not offer high-availability, as it only connected to a single MQTT broker. 
+
+### high-availability and duplication in WIS2
+
