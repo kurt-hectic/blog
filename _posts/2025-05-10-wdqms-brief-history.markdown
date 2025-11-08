@@ -14,8 +14,8 @@ WDQMS has modues for surface, radiosonde, marine and climate observations and ha
 But how did WDQMS come to be the system it is? This post examines the history of WDQMS from its beginnings as a concept, to its current state.
 
 ### The beginnigs
-The WIGOS Data Quality Monitoring (WDQMS) concept was developed in the Inter Commission Coordination Group on the WMO Integrated Global Observing System (WIGOS) starting from 2014, under the leadership of co-chairs Sue Barrel and Bertrand Calpini, and WIGOS project manager Lars Peter Riishoojgaard. It consists of a monitoring function, the focus of this post, 
-and an Incident Management System function and Regional WIGOS center (RWC) concept. The monitoring function for availability, quality and timeliness was designed to be based on output provided by NWP centers.
+The WIGOS Data Quality Monitoring (WDQMS) concept was developed in the Inter Commission Coordination Group on the WMO Integrated Global Observing System (WIGOS) starting from 2014, under the leadership of co-chairs Sue Barrel and Bertrand Calpini, and WIGOS project manager Lars Peter Riishoojgaard. The concept consisted of a monitoring function, the focus of this post, 
+and an Incident Management System function and Regional WIGOS centers (RWC). The monitoring function for availability, quality and timeliness was designed to be based on output provided by NWP centers.
 
 The NWP-focused approach reflected NWP centers' *unique perspective as principal users of observations exchanged in real-time*. 
 NWP centers are best suited to asses which observational data exchanged through the network is **available**, **usable** and **in-time** for assimilation in numerical weather prediction.
@@ -52,6 +52,10 @@ A Memorandum of Understanding was signed in 2019.
 
 Starting from 2018, and as a result of the WDQMS webtool putting into evidence the relatively poor state of international data exchange, the Commission for Basic Systems (CBS) Management Group, CBS-TECO, and later the WMO EC decided to take 
 immediate action to improve the situation, eventually leading to the development of the WMO Global Basic Observing Network (GBON) and WMO's new data-policy.
+
+
+![WDQMS in 2017]( {{ '/assets/images/Video-wall-2017.png' | relative_url }}  )
+*WDQMS webtool prototype visible in the WMO "video-wall" in 2017. The video-wall was intstrumental in creating momentum for revising WMO's data-policy.*
 
 In the meantime the ECMWF web-development team, freshly reinforced by lead developer Pierre Vernier, was busy working on the production system.
 A complete re-write, the initial production system was based on a cloud-native infrastructure running in a Kubernetes cluster, 
