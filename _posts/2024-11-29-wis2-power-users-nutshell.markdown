@@ -40,14 +40,16 @@ data associated which the notification can be downloaded.
 {% endhighlight %}
 *Extract of a notification message, showing data_id and link properties*
 
-This shell one-liner, leveraging only unix tools, exemplifies how to download data from WIS 2.0. _mosquitto_sub_ connects to a global broker and subscribes to surface observations from Sweden.
+The shell one-liner below exemplifies how to download data from WIS 2.0 by only using Unix tools. _mosquitto_sub_ connects to a global broker and subscribes to surface observations from Sweden.
 The output is read by a loop, piped into a _jq_ expression extracting the data URL from the notification which is in turn piped to _wget_ for download.
 
 {% highlight shell %}
-mosquitto_sub -h globalbroker.meteo.fr --username everyone -P everyone  -t "cache/a/WIS 2.0/se-smhi/data/core/weather/surface-based-observations/synop" |  while read line ; do echo $line | jq -r '.links[0].href' | wget --input-file=-  ; done
+mosquitto_sub -h globalbroker.meteo.fr --username everyone -P everyone  -t "cache/a/wis2/se-smhi/data/core/weather/surface-based-observations/synop" |  while read line ; do echo $line | jq -r '.links[0].href' | wget --input-file=-  ; done
 {% endhighlight %}
 
-However, this solution is unsuitable for processing a high rate of messages. This is because mosquitto_sub can receive new messages at a higher rate through its already established connection, than wget, which requires a new network connection for each message. Evenytually the inter-process buffer will be exhausted leading to data-loss.
+While this solution works for infrequent data, it is unsuitable for processing a high rate of messages. 
+This is because mosquitto_sub can receive new messages at a higher rate through its already established connection, than wget, 
+which requires a new network connection for each message. During high-load, the inter-process buffer will be exhausted and lead to data-loss.
 The solution is also reliant on a single broker, failure of which will lead to failure of receiving data.
 
 The remainder of this post discusses strategies how to reliably connect to WIS 2.0 and to process data at scale.
@@ -63,7 +65,7 @@ The queue servers multiple purposes.
 #### asynchronous processing
 
 First, introducing a queue allows to process messages asynchronously. Since putting an item into a queue can be done equally fast than the arrival
-of new messages, the producer can immediately return to accepting new messages from the network. The processing of these messages can be done independently by a different process. 
+of new messages, the producer can immediately return to accepting new messages from the network. The processing of these messages can then be done independently by a different process. 
 This is important because downloading data takes significantly longer than receiving a new MQTT message. 
 Messages can arrive through MQTT at a rate of 1000/s, whereas downloading even a small amount of data through the internet from a physically remote
 GC can take between 100-1000ms. This is because a new network connection is required, the data needs to be transferred through the network and 
@@ -72,7 +74,7 @@ Without a queue and and during peak message arrival, downloading the data associ
 eventually exhausting the network buffer and leading to data loss.
 Subject to enough memory, the queue can buffer a temporary higher inflow rate than processing rate.
 
-The following code implements a simple MQTT subscription, queueing of incoming messages in a queue and processing of the queue in a separate thread.
+[Example code #1]({% link /assets/code/queue_example.py%}) implements a simple MQTT subscription, queueing of incoming messages in a queue and processing of the queue in a separate thread.
 
 {% highlight python %}
 import threading
@@ -81,7 +83,7 @@ import paho.mqtt.client as mqtt
 
 
 def on_connect(client, userdata, flags, rc):
-    client.subscribe("cache/a/WIS 2.0/se-smhi/data/core/weather/surface-based-observations/synop")
+    client.subscribe("cache/a/wis2/se-smhi/data/core/weather/surface-based-observations/synop")
 
 def on_message(client, userdata, msg):
     # put newly received messages into the queue
@@ -118,7 +120,7 @@ Second, the queue makes is possible for multiple consumers to process the queue 
 This makes sense, because the downloading process spends most of its time waiting for network IO, during which another process can exchange data 
 through the network.
 
-The following code adds mutlithreading to the previous solution with 5 threads consuming the queue in parallel.
+[Example code #2]({% link /assets/code/parallel-workers-example.py%}) adds mutlithreading to the previous solution with 5 threads consuming the queue in parallel.
 
 {% highlight python %}
 [..]
@@ -147,9 +149,84 @@ due to parallel processing. However, it does not offer high-availability, as it 
 To compensate for the loss of a single GB, WIS 2.0 provides redundant global infrastructure in the form of multiple GBs. 
 Instead of just connecting to one GB, users with high-availability requirements must connect to at least two GBs. 
 New WIS 2.0 notifications will then arrive through both MQTT connections, one providing safeguards against the loss of the other.
-However, this redundancy comes at the expense of duplicate messages (technically duplicate messages even arrive with a single GB connection
+But this redundancy comes at the expense of duplicate messages (technically duplicate messages even arrive with a single GB connection
 because redundant GC also publish notifications for the same data). 
 
 To avoid processing the same data multiple times, the property "data_id" in the WIS 2.0 notification message can be used. 
 The WIS 2.0 technical specifications prescribe that the "data_id" must be unique for at least 24h. This means that a notfication message
 with the same data_id published within 24h can be considered a duplicate and discarded.
+
+[Example code #3]({% link /assets/code/multiple-brokers-example.py%}) creates two mqtt clients each connecting to a different GB in a separate thread. The data_id is extracted from the decoded notification 
+message and stored in a dictionary, which is checked before queueing a message. In case the same data_id has been seen in the last 24h, the message is considered
+a duplicate and ignored. 
+
+{% highlight python %}
+[..]
+# dictionary to track processed data IDs
+processed_dataids = {}
+[..]
+def on_message(client, userdata, msg):
+    print("Message received from client:", client._client_id.decode())
+    try:
+        notification = json.loads(msg.payload.decode())
+        data_id = notification["properties"]["data_id"]
+
+        # queue message only if data_id has not been already processed in the last 24 hours
+        if not data_id in processed_dataids or datetime.now() - processed_dataids[data_id] > timedelta(days=1):
+            processed_dataids[data_id] = datetime.now()
+            q.put(notification)
+
+    except Exception as e:
+        print("Error processing message:", e)
+[..]
+
+# create  MQTT clients and set the callback functions
+for gb in ["globalbroker.meteo.fr", "gb.wis.cma.cn"]:
+
+    print("Connecting to broker:", gb)
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2,client_id=f"client_{gb}")
+    client.username_pw_set("everyone", "everyone")
+    client.on_connect = on_connect
+    client.on_message = on_message
+
+    # connect to the MQTT broker and start the loop
+    client.connect(gb, 1883, 60)
+    client.loop_start()
+    
+
+# avoid exiting to process messages    
+while True:
+    time.sleep(10)
+
+
+{% endhighlight %}
+
+### more high-availability and quality of service
+
+Subscribing to multiple GBs provides redundancy against failure of parts of the global infrastructure, but does not protect against local 
+connectivity or host-side issues like internet connection loss, server crash or reboot.
+The MQTT procotol provides limited mitigation against local connectivity loss in the form of quality of service flags.
+When quality of service is enabled for a subscription and the persistent session parameter set, non delivered messages will be stored on broker side 
+and delivered when the client reconnects. This caching feature is broker implementation dependent and subject to available resources, mostly memory,  on the broker
+and can therefore only be relied uppon for short interrumptions to connectity for high-volume subscriptions. 
+
+[Example code #4]({% link /assets/code/multiple-brokers-example.py%}) implements QoS and persistent sessions, by setting the QoS and persistent sessions 
+flags as well as by providing a unique and durable client id allowing the server to identify the client when reconnecting.
+
+{% highlight python %}
+[..]
+def on_connect(client, userdata, flags, rc, properties=None):
+    client.subscribe("cache/a/wis2/se-smhi/data/core/weather/surface-based-observations/synop",qos=1)
+[..]
+for gb in ["globalbroker.meteo.fr", "gb.wis.cma.cn"]:
+
+    print("Connecting to broker:", gb)
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2,client_id=f"client_{gb}", clean_session=False)
+    [..]
+{% endhighlight %}
+
+### towards a production grade architecture
+
+The example codes provided above focus on WIS 2.0 concepts. They do not implement security or signal handling for gracefull shutdown. 
+Being implemented in a single program, they do not scale across multiple servers or sites.
+A future post will examine how to turn these concepts into a highly scalable and redundant processing system.
