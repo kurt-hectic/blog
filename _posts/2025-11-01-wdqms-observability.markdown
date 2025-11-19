@@ -43,6 +43,9 @@ that failed without error message, for example when being terminated by the Kube
 To debug problems the team also required more insight about how often cron-jobs failed over time and see this information in the context of other
 system parameters.
 
+![Cron-job age]( {{ '/assets/images/cron-job-age-dashboard.png' | relative_url }}  )
+*Dashboard visualizing the time since last succesfull completion of aggregation cron-jobs. Deviations from the regular see-saw pattern indicate failure of, or delay in, completion.*
+
 A metric representing the last successful completion of a cron-job can be used for alerting based on the age of the metric, and kubernetes also natively exposes metrics on cron-jobs through its kube-state-metrics agent. 
 
 ### Resource usage
@@ -104,7 +107,7 @@ the data-processing jobs.
 
 ## dealing with infrequent events as metrics
 While most components of WDQMS, like request rate or memory consumption, continously update metrics, the data-processing jobs only update their metrics as often as they are invoked, 
-which can range from 1-24 hours, well above the 15 second scrape-interval used by Prometheus. This presents a curiousity when interpreting the metric, as Prometheus continously scrapes a largely unchanged metric,
+which can range from 30 minutes to 24 hours, well above the 15 second scrape-interval used by Prometheus. This presents a curiousity when interpreting the metric, as Prometheus continously scrapes a largely unchanged metric,
 giving potentially misleading information to an uninformed analyst. 
 
 The figure underneath exemplifies the issue. Only the y-axis represents the duration of the cron-job, whereas the offset on the x-axis, 
