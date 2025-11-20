@@ -22,11 +22,11 @@ The remainder of the post discusses the reasons motivating the introduction of m
 
 
 ### Cron-jobs
-Around 25 periodic jobs form the base of WDQMS data-processing. Implemented as Kubernetes cron-jobs, these jobs obtain data from different data-sources and aggregate data for display in the system.
-Cron-jobs run at different times of the day and with varying frequency. Since some cron-jobs depend on successful completion 
-of others, the start times are set so that dependent cron-jobs are launched after the completion of jobs they depend on. 
-For example, the data aggregation jobs are launched after the data-fetching jobs obtaining data from NWP centers.
-To optimize the start date of cron-jobs, an overview of the start time, end-time and running time of the various cron-jobs is needed, 
+Around 25 periodic jobs form the base of WDQMS data-processing. Implemented as Kubernetes cron-jobs, they obtain data from different data-sources and aggregate data for display in the system.
+Cron-jobs run at different times of the day and with varying frequency. Since some jobs depend on successful completion 
+of others, and WDQMS lacking a scheduler able to orchestrate dependencies between jobs, the start times are set so that dependent cron-jobs are launched after the typical end date of jobs they depend on. 
+For example, the data aggregation jobs are launched two hours after the data-fetching jobs obtaining data from NWP centers, which typically run for 90 minutes.
+To optimize the start date, an overview of the start time, end-time and running time of the various cron-jobs is needed, 
 including their evolution over time and including their variance. 
 Another reason requiring cron-job runtime parameters was to have a baseline to compare more efficient implementations of the algorithms to.
 
@@ -36,7 +36,7 @@ Another reason requiring cron-job runtime parameters was to have a baseline to c
 Cron-job runtime properties like start and enddate can be conceptualized as metrics, allowing analysis over time and using labels to distinguish between cron-jobs.
 
 ### Error detection
-Error detection is cricital in WDQMS, because errors in the data-processing jobs mean that users do not see the latest data.
+Error detection is cricital in WDQMS, because errors in the data-processing mean that users do not see the latest data.
 While a log-file based system of error detection had already been implemented, it lacked a convenient approach to detecting jobs 
 that failed without error message, for example when being terminated by the Kubernetes cluster or when jobs were not lauchend to begin with due to configuration issues.
 To debug problems the team also required more insight about how often cron-jobs failed over time and see this information in the context of other
@@ -59,8 +59,7 @@ Standard metrics exposed by Kubernetes and Postgres allow to analyze resource us
 
 ### Insights into public use and system evolution
 Finally, the team also wanted to gain insight of how the public interacts with WDQMS, particularly which data is downloaded through the API
-and how frequent, as well as to understand changes to the data, for example changes to the station list, or number of new observations 
-processed.
+and how frequently, and also understand changes to the data, for example changes to the station list, or number of new observations processed.
 
 The number of downloads or number of observations processed can easily be conceptualized as metrics.
 
@@ -118,8 +117,8 @@ This occurs when a container is deployed in multiple pods in a ReplicaSet in Kub
 This presents a problem for metric analysis, as the metric collection happens in independent processes each having separate memory.
 
 In the case of a ReplicaSet, Prometheus can be configured to attach an unique label, typiacally called _pod_ to the metric for each separate pod.
-The issue can then be solved by summing up the metric in Grafana across the label, as in the example below adding up the individually exposed  
-metric _wdqmsapi_nwp_nr_downloads_total_ on which a _rate_ is calculated before.
+Prometheus then tracks the metric of each pod as separate time-series, which can be aggregated by Graphana at query level.
+The example shows how a rate is calculated on the individually exposed metric _wdqmsapi_nwp_nr_downloads_total_ which are then aggregated across labels.
 
 {% highlight Grafana %}
 sum(irate(wdqmsapi_nwp_nr_downloads_total[$__rate_interval])) by (file_type,period_type)
