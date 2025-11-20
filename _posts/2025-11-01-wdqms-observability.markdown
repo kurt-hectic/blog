@@ -53,7 +53,7 @@ and how it evolves over time. An understanding of these parameters is important 
 and also to effectively assess the impact of system optimization such as removal of unneeded indices.
 
 ![Database table and index size dashboard]( {{ '/assets/images/grafana-wdqms-database-dashboard.png' | relative_url }}  )
-*Dashboard showing table and index size and growth over time*
+*Dashboard showing table and index size and growth over time. The recent database optimization is visible by a drop in database size*
 
 Standard metrics exposed by Kubernetes and Postgres allow to analyze resource usage in terms of memory, CPU or disk-size over time.
 
