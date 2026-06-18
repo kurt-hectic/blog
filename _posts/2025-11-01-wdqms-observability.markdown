@@ -14,7 +14,7 @@ Second, to improve error detection and alerting, particularly concerning the rou
 Third, to know more about the resource usage of Kubernetes cluster and PostGIS database.
 Finally, the desire to gain additional insights of system usage by the public and evolution of information in the system. 
 
-![Grafana Django Dashboard]( {{ '/assets/images/grafana-wdqms-dashboard.png' | relative_url }}  )
+![Grafana Django Dashboard]( {{ '/assets/images/grafana-wdqms-dashboard.png' | relative_url }}  ){: .center-image width="75%"}
 *Grafana dashboard showing parts of the Django metrics.*
 
 
@@ -30,7 +30,7 @@ To optimize the start date, an overview of the start time, end-time and running 
 including their evolution over time and including their variance. 
 Another reason requiring cron-job runtime parameters was to have a baseline to compare more efficient implementations of the algorithms to.
 
-![Kubernetes cron-jobs]( {{ '/assets/images/k8s-jobs.png' | relative_url }}  )
+![Kubernetes cron-jobs]( {{ '/assets/images/k8s-jobs.png' | relative_url }}  ){: .center-image width="50%"}
 *WDQMS data-processing jobs in the K9s console.*
 
 Cron-job runtime properties like start and enddate can be conceptualized as metrics, allowing analysis over time and using labels to distinguish between cron-jobs.
@@ -42,7 +42,7 @@ that failed without error message, for example when being terminated by the Kube
 To debug problems the team also required more insight about how often cron-jobs failed over time and see this information in the context of other
 system parameters.
 
-![Cron-job age]( {{ '/assets/images/cron-job-age-dashboard.png' | relative_url }}  )
+![Cron-job age]( {{ '/assets/images/cron-job-age-dashboard.png' | relative_url }}  ){: .center-image width="50%"}
 *Dashboard visualizing the time since last succesfull completion of aggregation cron-jobs. Deviations from the regular see-saw pattern indicate failure of, or delay in, completion.*
 
 A metric representing the last successful completion of a cron-job can be used for alerting based on the age of the metric, and kubernetes also natively exposes metrics on cron-jobs through its kube-state-metrics agent. 
@@ -52,7 +52,7 @@ The team also wanted to better understand the resource usage of WDQMS of the Kub
 and how it evolves over time. An understanding of these parameters is important to plan the future system resource needs 
 and also to effectively assess the impact of system optimization such as removal of unneeded indices.
 
-![Database table and index size dashboard]( {{ '/assets/images/grafana-wdqms-database-dashboard.png' | relative_url }}  )
+![Database table and index size dashboard]( {{ '/assets/images/grafana-wdqms-database-dashboard.png' | relative_url }}  ){: .center-image width="50%"}
 *Dashboard showing table and index size and growth over time. The recent database optimization is visible by a drop in database size*
 
 Standard metrics exposed by Kubernetes and Postgres allow to analyze resource usage in terms of memory, CPU or disk-size over time.
@@ -108,7 +108,7 @@ giving potentially misleading information to an uninformed analyst.
 The figure underneath exemplifies the issue. Only the y-axis represents the duration of the cron-job, whereas the offset on the x-axis, 
 while suggesting to give information about the duration, remains static until the metric is next updated by the subsequent cron-job run.
 
-![Cron-Jon duration dashboard]( {{ '/assets/images/cron-job-metric-via-pushgateway.png' | relative_url }}  )
+![Cron-Jon duration dashboard]( {{ '/assets/images/cron-job-metric-via-pushgateway.png' | relative_url }}  ){: .center-image width="50%"}
 *Cron-job duration metric as seen via pushgateway*
 
 ## dealing with container and process replication  
@@ -117,7 +117,7 @@ This occurs when a container is deployed in multiple pods in a ReplicaSet in Kub
 This presents a problem for metric analysis, as the metric collection happens in independent processes each having separate memory.
 
 In the case of a ReplicaSet, Prometheus can be configured to attach an unique label, typiacally called _pod_ to the metric for each separate pod.
-Prometheus then tracks the metric of each pod as separate time-series, which can be aggregated by Graphana at query level.
+Prometheus then tracks the metric of each pod as separate time-series, which can be aggregated by Grafana at query level.
 The example shows how a rate is calculated on the individually exposed metric _wdqmsapi_nwp_nr_downloads_total_ which are then aggregated across labels.
 
 {% highlight Grafana %}
@@ -128,7 +128,7 @@ In the case of multiple processes running inside a pod, such as for example seve
 processes running inside a pod, each of which tracks its own independent instance of the metric. The value of the metric as seen from outside by Prometheus then corresponds 
 to the metric of whichever process responds to the metric harvesting request at that moment in time, resulting in an unstable (and incorrect) pattern as can be seen in the figure below. 
 
-![multiprocess metric before after]( {{ '/assets/images/multiprocess-metric-before-after.png' | relative_url }}  )
+![multiprocess metric before after]( {{ '/assets/images/multiprocess-metric-before-after.png' | relative_url }}  ){: .center-image width="75%"}
 *Metric calculated by multiple processes before and after correctly configuring prometheus_client for multiprocess mode*
 
 In the case of the prometheus_client python package used by WDQMS (and in Django), enabling [multiprocess_mode](https://prometheus.github.io/client_python/multiprocess/)

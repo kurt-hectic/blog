@@ -14,6 +14,15 @@
     </main>
 
     {%- include footer.html -%}
+	
+	<script src="/assets/code/medium-zoom.min.js"></script>
+<script>
+  // This automatically target all images inside your blog posts
+  mediumZoom('.post-content img, .page-content img', {
+    margin: 24,
+    background: '#fff'
+  });
+</script>
 
   </body>
 
