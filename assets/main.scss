@@ -9,3 +9,10 @@
   margin-left: auto;
   margin-right: auto;
 }
+
+/* Add this to style the marked lines from mark_lines */
+.highlight .hll {
+  background-color: #ffe699; /* Change to any light highlight color you like */
+  display: block;            /* Ensures the highlight spans the full width */
+  width: 100%;
+}
